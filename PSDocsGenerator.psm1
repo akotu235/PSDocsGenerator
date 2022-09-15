@@ -50,21 +50,32 @@ $($help.description.Text)
 
 ## PARAMETERS
 $($help.parameters.parameter | ForEach-Object {
-        if(($_.name) -notlike "WhatIf" -and ($_.name) -notlike "Confirm" ){
-            "`n### -$($_.name)`n"
+        
+        "`n### -$($_.name)`n"
+        if("WhatIf" -like ($_.name)){
+            "Prompts you for confirmation before running the ``$functionName``.`n"
+        }
+        elseif("Confirm" -like ($_.name)){
+            "Shows what would happen if the ``$functionName`` runs. The cmdlet is not run.`n"
+        }
+        else{
             $description = ""
             $((Out-String -InputObject $_.description).Split("`n") | ForEach-Object {$description+=$_.Trim()})
             "$description`n"
-            "``````yaml`n"
-            "Type: $($_.type.name)`n"
-            "Required: $($_.required)`n"
-            "Position: $($_.position)`n"
-            "Default value: $(if(-not $_.defaultValue){'none'}else{$_.defaultValue.Trim('"')})`n"
-            "Accept pipeline input: $($_.pipelineInput)`n"
-            "Accept wildcard characters: $($_.globbing)`n"
-            "```````n"
         }
+        "``````yaml`n"
+        "Type: $($_.type.name)`n"
+        "Required: $($_.required)`n"
+        "Position: $($_.position)`n"
+        "Default value: $(if(-not $_.defaultValue){'none'}else{$_.defaultValue.Trim('"')})`n"
+        "Accept pipeline input: $($_.pipelineInput)`n"
+        "Accept wildcard characters: $($_.globbing)`n"
+        "```````n"
     })
+$(if($((Out-String -InputObject $help.syntax) -like "*[<CommonParameters>]*")){
+    "### CommonParameters`n"
+    "This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, [see about_CommonParameters](https://docs.microsoft.com/pl-pl/powershell/module/microsoft.powershell.core/about/about_commonparameters).`n"
+})
 ## RELATED LINKS
 $($commands.Keys | ForEach-Object {
     if($functionName -notlike $_){
