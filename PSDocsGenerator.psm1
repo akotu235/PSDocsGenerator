@@ -22,7 +22,7 @@ function Convert-HelpToMarkdown{
         [System.String]$Destination = "$HOME\Desktop\"
     )
     if($ModulePath){
-        $ModuleName = (Split-Path $ModulePath -Leaf).trim(".ps{m,d}1")
+        $ModuleName = (Split-Path $ModulePath -Leaf).Trim(".ps{m,d}1")
         Import-Module $ModulePath
     }
     else{
@@ -33,34 +33,46 @@ function Convert-HelpToMarkdown{
     $commands.Keys | ForEach-Object {
         $help = Get-Help $_ 
         $MDFile = "$Destination\Docs\Modules\$ModuleName\$_.md"
+        $functionName = $_
         $content = @"
 # $_
+
 ## SYNOPSIS
 $($help.Synopsis)
+
 ## SYNTAX
 ``````
 $((Out-String -InputObject $help.syntax).Replace("`r","").Replace("`n","").Replace($_,"`n$_").Trim())
 ``````
+
 ## DESCRIPTION
 $($help.description.Text)
+
 ## PARAMETERS
 $($help.parameters.parameter | ForEach-Object {
         if(($_.name) -notlike "WhatIf" -and ($_.name) -notlike "Confirm" ){
-            "### -$($_.name)`r`n"
+            "`n### -$($_.name)`n"
             $description = ""
             $((Out-String -InputObject $_.description).Split("`n") | ForEach-Object {$description+=$_.Trim()})
-            "$description`r`n"
-            "``````yaml`r`n"
-            "Type: $($_.type.name)`r`n"
-            "Required: $($_.required)`r`n"
-            "Position: $($_.position)`r`n"
-            "Default value: $(if(-not $_.defaultValue){'none'}else{$_.defaultValue.trim('"')})`r`n"
-            "Accept pipeline input: $($_.pipelineInput)`r`n"
-            "Accept wildcard characters: $($_.globbing)`r`n"
-            "```````r`n"
+            "$description`n"
+            "``````yaml`n"
+            "Type: $($_.type.name)`n"
+            "Required: $($_.required)`n"
+            "Position: $($_.position)`n"
+            "Default value: $(if(-not $_.defaultValue){'none'}else{$_.defaultValue.Trim('"')})`n"
+            "Accept pipeline input: $($_.pipelineInput)`n"
+            "Accept wildcard characters: $($_.globbing)`n"
+            "```````n"
         }
     })
+## RELATED LINKS
+$($commands.Keys | ForEach-Object {
+    if($functionName -notlike $_){
+        "[$_]($_.md)`n`n"
+    }
+})
 "@
+        $content = $content.Split("`n") | ForEach-Object {"$($_.Trim())"}
         if(-not (Test-Path $MDFile)){
             New-Item $MDFile -Force >> $null
         }
