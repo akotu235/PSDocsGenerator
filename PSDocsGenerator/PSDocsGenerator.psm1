@@ -4,7 +4,7 @@ Creates an markdown file based on help.
 .DESCRIPTION
 Convert PowerShell help information to a markdown file.
 .PARAMETER ModuleName
-Specifies the name of the module for which you want to generate the markdown file with documentation. Looks up the specified module name in $ Env:PSModulePath.
+Specifies the name of the module for which you want to generate the markdown file with documentation. Looks up the specified module name in ``$Env:PSModulePath``.
 .PARAMETER ModulePath
 Specifies the path of the module for which you want to generate the markdown file with documentation. This parameter accepts the path to the folder that contains the module.
 .PARAMETER Destination
