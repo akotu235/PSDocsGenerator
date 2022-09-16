@@ -21,6 +21,7 @@ function Convert-HelpToMarkdown{
         [System.String]$ModulePath,
         [System.String]$Destination = "$HOME\Desktop\"
     )
+    Get-Module | Remove-Module
     if($ModulePath){
         $ModuleName = (Split-Path $ModulePath -Leaf).Trim(".ps{m,d}1")
         Import-Module $ModulePath
@@ -45,12 +46,13 @@ $($help.Synopsis)
 $((Out-String -InputObject $help.syntax).Replace("`r","").Replace("`n","").Replace($_,"`n$_").Trim())
 ``````
 
-## DESCRIPTION
-$($help.description.Text)
-
-## PARAMETERS
-$($help.parameters.parameter | ForEach-Object {
-        
+$(if($help.description.Text){
+    "## DESCRIPTION`n"
+    $($help.description.Text)
+})
+$(if($help.parameters.parameter){
+    "## PARAMETERS`n"
+    $($help.parameters.parameter | ForEach-Object {
         "`n### -$($_.name)`n"
         if("WhatIf" -like ($_.name)){
             "Prompts you for confirmation before running the ``$functionName``.`n"
@@ -72,16 +74,18 @@ $($help.parameters.parameter | ForEach-Object {
         "Accept wildcard characters: $($_.globbing)`n"
         "```````n"
     })
-$(if($((Out-String -InputObject $help.syntax) -like "*[<CommonParameters>]*")){
-    "### CommonParameters`n"
-    "This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, [see about_CommonParameters](https://docs.microsoft.com/pl-pl/powershell/module/microsoft.powershell.core/about/about_commonparameters).`n"
-})
-## RELATED LINKS
-$($commands.Keys | ForEach-Object {
-    if($functionName -notlike $_){
-        "[$_]($_.md)`n`n"
-    }
-})
+    $(if($((Out-String -InputObject $help.syntax) -like "*[<CommonParameters>]*")){
+        "### CommonParameters`n"
+        "This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, [see about_CommonParameters](https://docs.microsoft.com/pl-pl/powershell/module/microsoft.powershell.core/about/about_commonparameters).`n"
+    })})
+    $(if($commands.Keys.Count -gt 1){
+        "## RELATED LINKS`n"
+        $commands.Keys | ForEach-Object {
+            if($functionName -notlike $_){
+                "[$_]($_.md)`n`n"
+            }
+        }
+    })
 "@
         $content = $content.Split("`n") | ForEach-Object {"$($_.Trim())"}
         if(-not (Test-Path $MDFile)){
