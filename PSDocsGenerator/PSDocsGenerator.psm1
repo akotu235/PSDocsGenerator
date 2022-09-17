@@ -21,17 +21,22 @@ function Convert-HelpToMarkdown{
         [System.String]$ModulePath,
         [System.String]$Destination = "$HOME\Desktop\"
     )
-    Get-Module | Remove-Module
     if($ModulePath){
-        $ModuleName = (Split-Path $ModulePath -Leaf).Trim(".ps{m,d}1")
+        if($ModulePath -like "*.ps?1"){
+            $ModulePath = Split-Path $ModulePath -Parent
+        }
+        $ModuleName = (Split-Path $ModulePath -Leaf)
+        Get-Module $ModuleName | Remove-Module
         Import-Module $ModulePath
     }
     else{
+        Get-Module $ModuleName | Remove-Module
         Import-Module $ModuleName
     }
-    $commands = (Get-Module $ModuleName | select ExportedFunctions).ExportedFunctions
-    $ModuleName = (Get-Module -Name $ModuleName).Name
-    $commands.Keys | ForEach-Object {
+    $Module = Get-Module $ModuleName
+    $commands = ($Module | select ExportedFunctions).ExportedFunctions
+    $commands = $commands.Keys
+    $commands | ForEach-Object {
         $help = Get-Help $_ 
         $MDFile = "$Destination\Docs\Modules\$ModuleName\$_.md"
         $functionName = $_
@@ -78,9 +83,9 @@ $(if($help.parameters.parameter){
         "### CommonParameters`n"
         "This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, [see about_CommonParameters](https://docs.microsoft.com/pl-pl/powershell/module/microsoft.powershell.core/about/about_commonparameters).`n"
     })})
-    $(if($commands.Keys.Count -gt 1){
+    $(if($commands.Count -gt 1){
         "## RELATED LINKS`n"
-        $commands.Keys | ForEach-Object {
+        $commands | ForEach-Object {
             if($functionName -notlike $_){
                 "[$_]($_.md)`n`n"
             }
@@ -93,4 +98,21 @@ $(if($help.parameters.parameter){
         }
         Set-Content $MDFile $content -Force
     }
+    $MDFile = "$Destination\Docs\Modules\$ModuleName\$ModuleName.md"
+    $content = @"
+# $ModuleName Module
+
+## Description
+
+$(($Module | select Description).Description)
+
+## $ModuleName Cmdlets
+
+$($commands | ForEach-Object {
+    "### [$_]($_.md)`n`n"
+    "$((Get-Help $_).Synopsis)`n"
+})
+"@
+    $content = $content.Split("`n") | ForEach-Object {"$($_.Trim())"}
+    Set-Content $MDFile $content -Force
 }
