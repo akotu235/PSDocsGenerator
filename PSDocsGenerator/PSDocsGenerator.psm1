@@ -26,11 +26,11 @@ function Convert-HelpToMarkdown{
             $ModulePath = Split-Path $ModulePath -Parent
         }
         $ModuleName = (Split-Path $ModulePath -Leaf)
-        Get-Module $ModuleName | Remove-Module
+        Remove-Module -Name $ModuleName -Force -ErrorAction SilentlyContinue
         Import-Module $ModulePath
     }
     else{
-        Get-Module $ModuleName | Remove-Module
+        Remove-Module -Name $ModuleName -Force -ErrorAction SilentlyContinue
         Import-Module $ModuleName
     }
     $Module = Get-Module $ModuleName
