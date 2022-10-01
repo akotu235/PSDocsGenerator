@@ -40,79 +40,85 @@ function Convert-HelpToMarkdown{
         $help = Get-Help $_ 
         $MDFile = "$Destination\Docs\Modules\$ModuleName\$_.md"
         $functionName = $_
-        $content = @"
-# $_
-
-## SYNOPSIS
-$($help.Synopsis)
-
-## SYNTAX
-``````
-$((Out-String -InputObject $help.syntax).Replace("`r","").Replace("`n","").Replace($_,"`n$_").Trim())
-``````
-
-$(if($help.description.Text){
-    "## DESCRIPTION`n"
-    $($help.description.Text)
-})
-$(if($help.parameters.parameter){
-    "## PARAMETERS`n"
-    $($help.parameters.parameter | ForEach-Object {
-        "`n### -$($_.name)`n"
-        if("WhatIf" -like ($_.name)){
-            "Prompts you for confirmation before running the ``$functionName``.`n"
-        }
-        elseif("Confirm" -like ($_.name)){
-            "Shows what would happen if the ``$functionName`` runs. The cmdlet is not run.`n"
-        }
-        else{
-            $description = ""
-            $((Out-String -InputObject $_.description).Split("`n") | ForEach-Object {$description+=$_.Trim()})
-            "$description`n"
-        }
-        "``````yaml`n"
-        "Type: $($_.type.name)`n"
-        "Required: $($_.required)`n"
-        "Position: $($_.position)`n"
-        "Default value: $(if(-not $_.defaultValue){'none'}else{$_.defaultValue.Trim('"')})`n"
-        "Accept pipeline input: $($_.pipelineInput)`n"
-        "Accept wildcard characters: $($_.globbing)`n"
-        "```````n"
-    })
-    $(if($((Out-String -InputObject $help.syntax) -like "*[<CommonParameters>]*")){
-        "### CommonParameters`n"
-        "This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, [see about_CommonParameters](https://docs.microsoft.com/pl-pl/powershell/module/microsoft.powershell.core/about/about_commonparameters).`n"
-    })})
-    $(if($commands.Count -gt 1){
-        "## RELATED LINKS`n"
-        $commands | ForEach-Object {
-            if($functionName -notlike $_){
-                "[$_]($_.md)`n`n"
+        $content = "# $_`n`n"
+        $content += "## SYNOPSIS`n"
+        $content += "$($help.Synopsis)`n"
+        $content += "`n[\\]: # (END SYNOPSIS)`n`n"
+        $content += "## SYNTAX`n"
+        $content += "```````n"
+        "$((Out-String -InputObject $help.syntax -Width 1000))".Split("`n'") | ForEach-Object {
+            if($_.Length -gt 1){
+                $content += $_
             }
         }
-    })
-"@
+        $content += "`n```````n"
+        $content += "`n[\\]: # (END SYNTAX)`n`n"
+        if($help.description.Text){
+            $content += "## DESCRIPTION`n$($help.description.Text)`n"
+            $content += "`n[\\]: # (END DESCRIPTION)`n`n"
+        }
+        if($help.parameters.parameter){
+            $content += "## PARAMETERS`n"
+            $help.parameters.parameter | ForEach-Object {
+                $content += "`n### -$($_.name)`n"
+                if("WhatIf" -like ($_.name)){
+                    $content += "Prompts you for confirmation before running the ``$functionName``.`n"
+                }
+                elseif("Confirm" -like ($_.name)){
+                    $content += "Shows what would happen if the ``$functionName`` runs. The cmdlet is not run.`n"
+                }
+                else{
+                    $description = ""
+                    $((Out-String -InputObject $_.description).Split("`n") | ForEach-Object {$description+=$_.Trim()})
+                    $content += "$description`n"
+                }
+                $content += "``````yaml`n"
+                $content += "Type: $($_.type.name)`n"
+                $content += "Required: $($_.required)`n"
+                $content += "Position: $($_.position)`n"
+                $content += "Default value: $(if(-not $_.defaultValue){'none'}else{$_.defaultValue.Trim('"')})`n"
+                $content += "Accept pipeline input: $($_.pipelineInput)`n"
+                $content += "Accept wildcard characters: $($_.globbing)`n"
+                $content += "```````n"
+            }
+            if($((Out-String -InputObject $help.syntax) -like "*[<CommonParameters>]*")){
+                $content += "`n### CommonParameters`n"
+                $content += "This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, [see about_CommonParameters](https://docs.microsoft.com/pl-pl/powershell/module/microsoft.powershell.core/about/about_commonparameters).`n"
+            }
+            $content += "`n[\\]: # (END PARAMETERS)`n`n"
+        }
+        if($commands.Count -gt 1){
+            $content += "## RELATED LINKS`n"
+            $commands | ForEach-Object {
+                if($functionName -notlike $_){
+                    $content += "[$_]($_.md)`n`n"
+                }
+            }
+            $content += "[\\]: # (END RELATED LINKS)`n`n"
+        }
+        $content += "[\\]: # (Generated by PSDocsGenerator)`n"
+        $content += "[\\]: # (https://github.com/akotu235/PSDocsGenerator)"
         $content = $content.Split("`n") | ForEach-Object {"$($_.Trim())"}
         if(-not (Test-Path $MDFile)){
-            New-Item $MDFile -Force >> $null
+                New-Item $MDFile -Force >> $null
         }
         Set-Content $MDFile $content -Force
     }
     $MDFile = "$Destination\Docs\Modules\$ModuleName\$ModuleName.md"
-    $content = @"
-# $ModuleName Module
-
-## Description
-
-$(($Module | select Description).Description)
-
-## $ModuleName Cmdlets
-
-$($commands | ForEach-Object {
-    "### [$_]($_.md)`n`n"
-    "$((Get-Help $_).Synopsis)`n"
-})
-"@
-    $content = $content.Split("`n") | ForEach-Object {"$($_.Trim())"}
+    $content = "# $ModuleName Module`n`n"
+    $content += "## Description`n"
+    $content += "$(($Module | select Description).Description)`n"
+    $content += "`n[\\]: # (END DESCRIPTION)`n`n"
+    $content += "## $ModuleName Cmdlets`n`n"
+    $commands | ForEach-Object {
+        $content += "### [$_]($_.md)`n"
+        $content += "$((Get-Help $_).Synopsis)`n`n"
+    }
+    $content += "[\\]: # (END CMDLETS)`n`n"
+    $content += "[\\]: # (Generated by PSDocsGenerator)`n"
+    $content += "[\\]: # (https://github.com/akotu235/PSDocsGenerator)"
+    $content = $content.Split("`n") | ForEach-Object {
+        "$($_.Trim())"
+    }
     Set-Content $MDFile $content -Force
 }
