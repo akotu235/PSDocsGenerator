@@ -1,6 +1,8 @@
 # [PSDocsGenerator](https://github.com/akotu235/PSDocsGenerator/blob/master/Docs/PSDocsGenerator.md)
 PowerShell module documentation generator
 
+[![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/PSDocsGenerator)](https://www.powershellgallery.com/packages/PSDocsGenerator)
+
 ## Description
 Generates PowerShell module documentation based on help and a manifest file.
 
