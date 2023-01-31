@@ -10,7 +10,7 @@ Download the latest version from PowerShell Gallery.
 Install-Module -Name PSDocsGenerator
 ```
 
-![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/PSDocsGenerator)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/PSDocsGenerator)](https://www.powershellgallery.com/packages/PSDocsGenerator)
 
 ## Update
 Upgrade to the latest version using the command:
