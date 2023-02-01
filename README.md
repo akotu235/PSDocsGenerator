@@ -32,8 +32,8 @@ Project Link: [https://github.com/akotu235/PSDocsGenerator](https://github.com/a
 
 ## Donation
 
-If you like my content, you can buy me a coffee or donate. Thank you.
+If you like my content, you can give me a coffee or donate. Thank you.
 
-[![ko-fi](https://img.shields.io/badge/donate-Buy%20me%20coffee-red)](https://ko-fi.com/C0C5ICZ0I)
+[![Give me coffee](https://img.shields.io/badge/donate-Give%20me%20coffee-red)](https://ko-fi.com/C0C5ICZ0I)
 
 [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=HDU4X9TF9Y5AY)
